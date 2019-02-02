@@ -14,6 +14,7 @@ import DialogActions from "@material-ui/core/DialogActions/DialogActions";
 import Button from "@material-ui/core/Button/Button";
 import DialogContent from "@material-ui/core/DialogContent/DialogContent";
 import MicIcon from "@material-ui/icons/Mic";
+import {Link} from "react-router-dom";
 import "./home.css";
 
 const styles = theme => ({
@@ -77,12 +78,9 @@ class Home extends React.Component {
                 </AppBar>
 
                 {/* List of doggo commands */}
-                <List component="nav">
-                    <ListItem button>
+                <List>
+                    <ListItem button component={Link} to="/detail/1">
                         <ListItemText primary="Sit" secondary="73%"/>
-                    </ListItem>
-                    <ListItem button>
-                        <ListItemText primary="Roll" secondary="63%"/>
                     </ListItem>
                 </List>
 
