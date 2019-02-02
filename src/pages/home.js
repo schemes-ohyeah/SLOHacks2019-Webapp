@@ -13,9 +13,8 @@ import DialogTitle from "@material-ui/core/DialogTitle/DialogTitle";
 import DialogActions from "@material-ui/core/DialogActions/DialogActions";
 import Button from "@material-ui/core/Button/Button";
 import DialogContent from "@material-ui/core/DialogContent/DialogContent";
-import MicIcon from "@material-ui/icons/Mic";
 import {Link} from "react-router-dom";
-import "./home.css";
+import AudioTranscriber from "../components/AudioTranscriber";
 
 const styles = theme => ({
     root: {
@@ -31,9 +30,6 @@ const styles = theme => ({
     },
     dialogContent: {
         textAlign: "center"
-    },
-    micIcon: {
-        fontSize: "5rem"
     }
 });
 
@@ -49,18 +45,28 @@ class Home extends React.Component {
     }
 
     acceptVoiceSample = () => {
-        alert("Accepted voice sample " + this.state.voiceSample);
+        this.modalOff();
+        alert("Submitting " + this.state.voiceSample + " to THE CLOUD");
     };
 
     modalOn = () => {
         this.setState({
-            showModal: true
+            determinedVoiceSample: false,
+            showModal: true,
+            voiceSample: ""
         });
     };
 
     modalOff = () => {
         this.setState({
             showModal: false
+        });
+    };
+
+    receiveRecognizedSpeech = (result) => {
+        this.setState({
+            determinedVoiceSample: true,
+            voiceSample: result
         });
     };
 
@@ -98,9 +104,9 @@ class Home extends React.Component {
                     onClose={this.state.modalOff}>
                     <DialogTitle>Speak a voice command</DialogTitle>
                     <DialogContent className={classes.dialogContent}>
-                        <div className="mic-icon-animation">
-                            <MicIcon className={classes.micIcon}/>
-                        </div>
+                        <AudioTranscriber
+                            sendRecognizedSpeech={this.receiveRecognizedSpeech}/>
+                        <Typography>{this.state.voiceSample}</Typography>
                     </DialogContent>
                     <DialogActions>
                         <Button
