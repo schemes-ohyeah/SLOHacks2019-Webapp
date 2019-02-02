@@ -1,10 +1,26 @@
 {
-  "name": "app",
+  "name": "dog-instrucc-webapp",
+  "contributors": [
+    {
+      "name": "Ethan De Guzman",
+      "url": "https://github.com/etdeg16"
+    },
+    {
+      "name": "Sean Park",
+      "url": "https://github.com/spark0698"
+    },
+    {
+      "name": "Peter Yang",
+      "url": "https://github.com/peteryangio"
+    }
+  ],
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "homepage": "https://dogtracc.tech/",
   "dependencies": {
     "@material-ui/core": "^3.9.1",
     "@material-ui/icons": "^3.0.2",
+    "gh-pages": "^2.0.1",
     "moment": "^2.24.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
@@ -13,6 +29,8 @@
     "react-scripts": "2.1.3"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

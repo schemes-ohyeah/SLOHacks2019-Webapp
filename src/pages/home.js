@@ -80,7 +80,7 @@ class Home extends React.Component {
                 {/* List of doggo commands */}
                 <List>
                     <ListItem button component={Link} to="/detail/1">
-                        <ListItemText primary="Sit" secondary="73%"/>
+                        <ListItemText primary="Sit" secondary="50%"/>
                     </ListItem>
                 </List>
 
