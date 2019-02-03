@@ -1,5 +1,5 @@
 export default class DragonBoard {
-    static IP_ADDRESS = "127.0.0.1";
+    static IP_ADDRESS = "http://192.168.137.65:8080";
 
     /**
      * Tells DragonBoard to start recording accelerometer values

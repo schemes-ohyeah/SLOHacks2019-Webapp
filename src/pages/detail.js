@@ -64,7 +64,8 @@ class Detail extends React.Component {
         super(props);
 
         this.state = {
-            data: undefined,
+            attempts: undefined,
+            commandDetail: undefined,
             loopStatus: Detail.LOOP_STATUS.idle
         };
     }
@@ -74,25 +75,32 @@ class Detail extends React.Component {
     }
 
     get successRate() {
-        if (this.state.data === undefined) {
+        if (this.state.commandDetail === undefined) {
             return 0;
         }
 
-        const successRate = Math.round(this.state.data.successRate * 100);
+        const successRate = Math.round(this.state.commandDetail.successRate * 100);
         return isNaN(successRate) ? 0 : successRate;
     }
 
     get title() {
-        if (this.state.data === undefined) {
+        if (this.state.commandDetail === undefined) {
             return "";
         }
 
-        return this.state.data.name[0].toUpperCase() + this.state.data.name.substring(1);
+        return this.state.commandDetail.name[0].toUpperCase() + this.state.commandDetail.name.substring(1);
     }
 
     getData = () => {
         Firebase.getCommand(this.props.match.params.id)
-            .then(data => this.setState({data}));
+            .then(commandDetail => this.setState({commandDetail}));
+        Firebase.listAttempts(this.props.match.params.id)
+            .then(attempts => {
+                this.setState({
+                    attempts,
+                    loopStatus: Detail.LOOP_STATUS.idle
+                })
+            });
     };
 
     handleLoopStatusUpdate = () => {
@@ -127,7 +135,7 @@ class Detail extends React.Component {
 
     _moveDog = () => {
         // Play TTS
-        GoogleSpeech.speak(this.state.data.name);
+        GoogleSpeech.speak(this.state.commandDetail.name);
 
         // Start recording
         DragonBoard.startAccelerometer(this.props.match.params.id)
@@ -150,7 +158,9 @@ class Detail extends React.Component {
         DragonBoard.stopAccelerometer()
             .then(attemptId => {
                 Firebase.validateAttempt(this.props.match.params.id, attemptId)
-                    .then(this.getData);
+                    .then(() => {
+                        this.getData();
+                    });
             });
     };
 
@@ -177,7 +187,7 @@ class Detail extends React.Component {
                 </AppBar>
 
                 {
-                    this.state.data === undefined
+                    this.state.commandDetail === undefined
                         ? <CircularProgress/>
                         : <div>
                             {/* Success rate */}
@@ -196,8 +206,8 @@ class Detail extends React.Component {
                             {/* History */}
                             <List>
                                 {
-                                    this.state.data.attempts
-                                        ? this.state.data.attempts.map((item, index) => (
+                                    this.state.attempts
+                                        ? this.state.attempts.map((item, index) => (
                                             <ListItem key={index}>
                                                 <ListItemAvatar>
                                                     <Avatar

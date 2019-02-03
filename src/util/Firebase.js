@@ -105,7 +105,7 @@ export default class Firebase {
             .collection("commands")
             .doc(commandId)
             .collection("attempts")
-            .orderBy("timestamp", "desc")
+            .orderBy("timestamp")
             .limit(1)
             .get()
             .then(querySnapshot => {
@@ -119,6 +119,7 @@ export default class Firebase {
                 })
             })
     }
+
     /**
      * Gets a specific attempt - typically used in non validated state
      *
@@ -147,7 +148,7 @@ export default class Firebase {
         return Firebase.db
             .collection("commands")
             .doc(commandId)
-            .collection(attemptId)
+            .collection("attempts")
             .doc(attemptId)
             .update({
                 success: result
@@ -161,33 +162,62 @@ export default class Firebase {
      * @param attemptId
      */
     static validateAttempt(commandId, attemptId) {
-        return Firebase.getAttempt(commandId, attemptId)
-            .then(recentAttempt => {
-                Firebase.getFirstAttempt(commandId)
-                    .then(firstAttempt => {
-                        fetch("https://us-central1-slohacks-dog-instrucc.cloudfunctions.net/function-1", {
-                            method: "POST",
-                            headers: new Headers({
-                                "Content-Type": "appliation/json"
-                            }),
-                            body: JSON.stringify({
-                                reference: firstAttempt.measurements,
-                                recent: recentAttempt.measurements
-                            })
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                const ERROR_THRESHOLD = 100;
-                                const totalError = data.error_x + data.error_y + data.error_z;
-                                console.log(totalError);
-                                const success = totalError < ERROR_THRESHOLD;
-                                Firebase.updateAttempt(commandId, attemptId, success)
-                                    .then(() => {
-                                        return Firebase.normalizeCommandSuccess(commandId);
-                                    });
+        return new Promise(resolve => {
+            Firebase.getAttempt(commandId, attemptId)
+                .then(recentAttempt => {
+                    Firebase.getFirstAttempt(commandId)
+                        .then(firstAttempt => {
+                            console.log(firstAttempt.id, attemptId);
+                            if (firstAttempt.id === attemptId) {
+                                Firebase.calibrate(commandId, attemptId, resolve);
+                            }
+                            else {
+                                Firebase.findError(firstAttempt, recentAttempt, commandId, attemptId, resolve);
+                            }
+                        });
+                });
+        });
+    }
+
+    static calibrate(commandId, attemptId, resolve) {
+        Firebase.updateAttempt(commandId, attemptId, true)
+            .then(() => {
+                Firebase.normalizeCommandSuccess(commandId)
+                    .then(() => resolve(true));
+            });
+    }
+
+    static findError(firstAttempt, recentAttempt, commandId, attemptId, resolve) {
+        const cloudFunctionUrl = "https://us-central1-slohacks-dog-instrucc.cloudfunctions.net/function-2";
+        const body = {
+            reference: JSON.parse(firstAttempt.measurements),
+            recent: JSON.parse(recentAttempt.measurements)
+        };
+        fetch(cloudFunctionUrl, {
+            method: "POST",
+            headers: new Headers({
+                "Content-Type": "application/json"
+            }),
+            body: JSON.stringify(body)
+        })
+            .then(response => response.json())
+            .then(data => {
+                const ERROR_THRESHOLD = 100;
+                const totalError = data.error_x + data.error_y + data.error_z;
+                console.log(totalError);
+                const success = totalError < ERROR_THRESHOLD;
+                Firebase.updateAttempt(commandId, attemptId, success)
+                    .then(() => {
+                        Firebase.normalizeCommandSuccess(commandId)
+                            .then(() => {
+                                resolve(success)
                             });
-                    })
+                    });
             })
+            .catch(error => {
+                console.error(error);
+                Firebase.findError(firstAttempt, recentAttempt, commandId, attemptId, resolve);
+            });
     }
 
     /**
