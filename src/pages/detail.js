@@ -20,6 +20,8 @@ import green from "@material-ui/core/colors/green";
 import red from "@material-ui/core/colors/red";
 import SuccessIcon from "@material-ui/icons/Check";
 import FailIcon from "@material-ui/icons/Close";
+import Firebase from "../util/Firebase";
+import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 
 const styles = theme => ({
     grow: {
@@ -48,17 +50,6 @@ const styles = theme => ({
     }
 });
 
-const dummyData = [
-    {
-        timestamp: "2019-02-02T18:03Z",
-        success: true
-    },
-    {
-        timestamp: "2019-02-02T18:00Z",
-        success: false
-    }
-];
-
 class Detail extends React.Component {
     static LOOP_STATUS = {
         idle: 0,
@@ -70,13 +61,33 @@ class Detail extends React.Component {
         super(props);
 
         this.state = {
+            data: undefined,
             loopStatus: Detail.LOOP_STATUS.idle
         };
+
+        this.firebase = new Firebase();
+    }
+
+    componentDidMount() {
+        this.firebase.getCommand(this.props.match.params.id)
+            .then(data => this.setState({data}));
     }
 
     get successRate() {
-        const percent = dummyData.filter(item => item.success).length / dummyData.length;
-        return Math.round(percent * 100);
+        if (this.state.data === undefined) {
+            return 0;
+        }
+
+        const successRate = Math.round(this.state.data.successRate * 100);
+        return isNaN(successRate) ? 0 : successRate;
+    }
+
+    get title() {
+        if (this.state.data === undefined) {
+            return "";
+        }
+
+        return this.state.data.name[0].toUpperCase() + this.state.data.name.substring(1);
     }
 
     handleLoopStatusUpdate = () => {
@@ -139,30 +150,46 @@ class Detail extends React.Component {
                     </Toolbar>
                 </AppBar>
 
-                {/* Success rate */}
-                <Typography
-                    className={classes.title}
-                    variant="h2">
-                    {this.successRate}%
-                </Typography>
+                {
+                    this.state.data === undefined
+                        ? <CircularProgress/>
+                        : <div>
+                            {/* Success rate */}
+                            <Typography
+                                className={classes.title}
+                                variant="h2">
+                                {this.successRate}%
+                            </Typography>
+                            <Typography
+                                className={classes.title}
+                                variant="h6">
+                                {this.title}
+                            </Typography>
 
-                {/* History */}
-                <List>
-                    {
-                        dummyData.map((item, index) => (
-                            <ListItem key={index}>
-                                <ListItemAvatar>
-                                    <Avatar className={item.success ? classes.successAvatar : classes.failAvatar}>
-                                        {
-                                            item.success ? <SuccessIcon/> : <FailIcon/>
-                                        }
-                                    </Avatar>
-                                </ListItemAvatar>
-                                <ListItemText primary={moment(item.timestamp).fromNow()}/>
-                            </ListItem>
-                        ))
-                    }
-                </List>
+                            {/* History */}
+                            <List>
+                                {
+                                    this.state.data.attempts
+                                        ? this.state.data.attempts.map((item, index) => (
+                                            <ListItem key={index}>
+                                                <ListItemAvatar>
+                                                    <Avatar
+                                                        className={item.success ? classes.successAvatar : classes.failAvatar}>
+                                                        {
+                                                            item.success ? <SuccessIcon/> : <FailIcon/>
+                                                        }
+                                                    </Avatar>
+                                                </ListItemAvatar>
+                                                <ListItemText primary={moment(item.timestamp).fromNow()}/>
+                                            </ListItem>
+                                        ))
+                                        : <Typography style={{padding: "1rem"}}>
+                                            No entries yet. Click the button at the bottom to start recording!
+                                        </Typography>
+                                }
+                            </List>
+                        </div>
+                }
 
                 {/* Loop status update */}
                 <Fab
@@ -172,15 +199,15 @@ class Detail extends React.Component {
                     onClick={this.handleLoopStatusUpdate}>
                     {
                         this.state.loopStatus === Detail.LOOP_STATUS.idle &&
-                            <PlayIcon/>
+                        <PlayIcon/>
                     }
                     {
                         this.state.loopStatus === Detail.LOOP_STATUS.recording &&
-                            <StopIcon/>
+                        <StopIcon/>
                     }
                     {
                         this.state.loopStatus === Detail.LOOP_STATUS.uploading &&
-                            <WaitIcon/>
+                        <WaitIcon/>
                     }
                 </Fab>
             </div>

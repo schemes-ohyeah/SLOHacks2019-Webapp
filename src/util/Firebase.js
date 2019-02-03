@@ -10,7 +10,12 @@ export default class Firebase {
             storageBucket: "",
             messagingSenderId: "504644134709"
         };
-        firebase.initializeApp(config);
+        try {
+            firebase.initializeApp(config);
+        }
+        catch (e) {
+            console.warn(e);
+        }
 
         this.db = firebase.firestore();
     }
@@ -38,6 +43,16 @@ export default class Firebase {
                     });
                     resolve(data);
                 });
+            });
+    }
+
+    getCommand(command) {
+        return this.db
+            .collection("commands")
+            .doc(command)
+            .get()
+            .then(doc => {
+                return doc.data();
             })
     }
 }
