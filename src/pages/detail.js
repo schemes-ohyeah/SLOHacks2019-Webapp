@@ -23,6 +23,7 @@ import FailIcon from "@material-ui/icons/Close";
 import Firebase from "../util/Firebase";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import DragonBoard from "../util/DragonBoard";
+import GoogleSpeech from "../util/GoogleSpeech";
 
 const styles = theme => ({
     grow: {
@@ -122,6 +123,7 @@ class Detail extends React.Component {
 
     _moveDog = () => {
         // Play TTS
+        GoogleSpeech.speak(this.state.data.name);
 
         // Start recording
         DragonBoard.startAccelerometer(this.props.match.params.id)
