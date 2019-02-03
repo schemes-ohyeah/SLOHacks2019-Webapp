@@ -15,6 +15,9 @@ import Button from "@material-ui/core/Button/Button";
 import DialogContent from "@material-ui/core/DialogContent/DialogContent";
 import {Link} from "react-router-dom";
 import AudioTranscriber from "../components/AudioTranscriber";
+import Firebase from "../util/Firebase";
+import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
+import {withRouter} from "react-router";
 
 const styles = theme => ({
     root: {
@@ -38,15 +41,25 @@ class Home extends React.Component {
         super(props);
 
         this.state = {
+            commands: undefined,
             determinedVoiceSample: false,
             showModal: false,
             voiceSample: ""
         };
+
+        this.firebase = new Firebase();
+    }
+
+    componentDidMount() {
+        this.firebase.listCommands().then(commands => this.setState({commands}));
     }
 
     acceptVoiceSample = () => {
         this.modalOff();
-        alert("Submitting " + this.state.voiceSample + " to THE CLOUD");
+        this.firebase.addCommand(this.state.voiceSample.toLowerCase())
+            .then(docRef => {
+                this.props.history.push(`/detail/${docRef.id}`);
+            });
     };
 
     modalOn = () => {
@@ -84,11 +97,29 @@ class Home extends React.Component {
                 </AppBar>
 
                 {/* List of doggo commands */}
-                <List>
-                    <ListItem button component={Link} to="/detail/1">
-                        <ListItemText primary="Sit" secondary="50%"/>
-                    </ListItem>
-                </List>
+                {
+                    this.state.commands === undefined
+                        ? <CircularProgress/>
+                        : <List>
+                            {
+                                this.state.commands.map(command => {
+                                    const commandName = command.name[0].toUpperCase() + command.name.substring(1);
+                                    const successRate = Math.round(command.successRate * 100);
+                                    return (
+                                        <ListItem
+                                            button
+                                            component={Link}
+                                            key={command.id}
+                                            to={`/detail/${command.id}`}>
+                                            <ListItemText
+                                                primary={commandName}
+                                                secondary={`${isNaN(successRate) ? 0 : successRate}%`}/>
+                                        </ListItem>
+                                    );
+                                })
+                            }
+                        </List>
+                }
 
                 {/* Add new command button */}
                 <Fab
@@ -127,4 +158,4 @@ class Home extends React.Component {
     }
 }
 
-export default withStyles(styles)(Home);
+export default withRouter(withStyles(styles)(Home));

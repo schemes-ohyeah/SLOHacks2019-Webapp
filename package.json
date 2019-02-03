@@ -20,6 +20,7 @@
   "dependencies": {
     "@material-ui/core": "^3.9.1",
     "@material-ui/icons": "^3.0.2",
+    "firebase": "^5.8.2",
     "gh-pages": "^2.0.1",
     "moment": "^2.24.0",
     "react": "^16.7.0",

@@ -10,7 +10,8 @@ import withStyles from "@material-ui/core/es/styles/withStyles";
 const styles = theme => ({
     root: {
         backgroundColor: theme.palette.background.paper,
-        height: "100vh"
+        height: "100vh",
+        overflowY: "scroll"
     }
 });
 
