@@ -46,17 +46,15 @@ class Home extends React.Component {
             showModal: false,
             voiceSample: ""
         };
-
-        this.firebase = new Firebase();
     }
 
     componentDidMount() {
-        this.firebase.listCommands().then(commands => this.setState({commands}));
+        Firebase.listCommands().then(commands => this.setState({commands}));
     }
 
     acceptVoiceSample = () => {
         this.modalOff();
-        this.firebase.addCommand(this.state.voiceSample.toLowerCase())
+        Firebase.addCommand(this.state.voiceSample.toLowerCase())
             .then(docRef => {
                 this.props.history.push(`/detail/${docRef.id}`);
             });

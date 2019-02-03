@@ -22,6 +22,7 @@ import SuccessIcon from "@material-ui/icons/Check";
 import FailIcon from "@material-ui/icons/Close";
 import Firebase from "../util/Firebase";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
+import DragonBoard from "../util/DragonBoard";
 
 const styles = theme => ({
     grow: {
@@ -54,7 +55,7 @@ class Detail extends React.Component {
     static LOOP_STATUS = {
         idle: 0,
         recording: 1,
-        uploading: 2
+        wait: 2
     };
 
     constructor(props) {
@@ -64,16 +65,15 @@ class Detail extends React.Component {
             data: undefined,
             loopStatus: Detail.LOOP_STATUS.idle
         };
-
-        this.firebase = new Firebase();
     }
 
     componentDidMount() {
-        this.firebase.getCommand(this.props.match.params.id)
+        Firebase.getCommand(this.props.match.params.id)
             .then(data => this.setState({data}));
     }
 
     get successRate() {
+
         if (this.state.data === undefined) {
             return 0;
         }
@@ -97,7 +97,7 @@ class Detail extends React.Component {
         else if (this.state.loopStatus === Detail.LOOP_STATUS.recording) {
             this._stopRecording();
         }
-        else if (this.state.loopStatus === Detail.LOOP_STATUS.uploading) {
+        else if (this.state.loopStatus === Detail.LOOP_STATUS.wait) {
             // Do nothing - user shouldn't be allowed to click at this time
         }
         else {
@@ -110,22 +110,41 @@ class Detail extends React.Component {
 
     _startRecording = () => {
         this.setState({
-            loopStatus: Detail.LOOP_STATUS.recording
-        });
+            loopStatus: Detail.LOOP_STATUS.wait
+        }, this._moveDog);
     };
 
     _stopRecording = () => {
         this.setState({
-            loopStatus: Detail.LOOP_STATUS.uploading
+            loopStatus: Detail.LOOP_STATUS.wait
         }, this._processData);
     };
 
+    _moveDog = () => {
+        // Play TTS
+
+        // Start recording
+        DragonBoard.startAccelerometer(this.props.match.params.id)
+            .then(status => {
+                if (status === 201) {
+                    this.setState({
+                        loopStatus: Detail.LOOP_STATUS.recording
+                    });
+                }
+                else {
+                    console.warn(status, "Something went wrong. Restarting process.");
+                    this.setState({
+                        loopStatus: Detail.LOOP_STATUS.idle
+                    })
+                }
+            })
+    };
+
     _processData = () => {
-        setTimeout(() => {
-            this.setState({
-                loopStatus: Detail.LOOP_STATUS.idle
+        DragonBoard.stopAccelerometer()
+            .then(attemptId => {
+                // get the attempt document and process it
             });
-        }, 1000);
     };
 
     render() {
@@ -160,6 +179,7 @@ class Detail extends React.Component {
                                 variant="h2">
                                 {this.successRate}%
                             </Typography>
+                            {/* Skill name */}
                             <Typography
                                 className={classes.title}
                                 variant="h6">
@@ -195,7 +215,7 @@ class Detail extends React.Component {
                 <Fab
                     className={classes.fab}
                     color="secondary"
-                    disabled={this.state.loopStatus === Detail.LOOP_STATUS.uploading}
+                    disabled={this.state.loopStatus === Detail.LOOP_STATUS.wait}
                     onClick={this.handleLoopStatusUpdate}>
                     {
                         this.state.loopStatus === Detail.LOOP_STATUS.idle &&
@@ -206,7 +226,7 @@ class Detail extends React.Component {
                         <StopIcon/>
                     }
                     {
-                        this.state.loopStatus === Detail.LOOP_STATUS.uploading &&
+                        this.state.loopStatus === Detail.LOOP_STATUS.wait &&
                         <WaitIcon/>
                     }
                 </Fab>
