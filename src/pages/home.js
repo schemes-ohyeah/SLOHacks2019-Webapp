@@ -100,21 +100,25 @@ class Home extends React.Component {
                         ? <CircularProgress/>
                         : <List>
                             {
-                                this.state.commands.map(command => {
-                                    const commandName = command.name[0].toUpperCase() + command.name.substring(1);
-                                    const successRate = Math.round(command.successRate * 100);
-                                    return (
-                                        <ListItem
-                                            button
-                                            component={Link}
-                                            key={command.id}
-                                            to={`/detail/${command.id}`}>
-                                            <ListItemText
-                                                primary={commandName}
-                                                secondary={`${isNaN(successRate) ? 0 : successRate}%`}/>
-                                        </ListItem>
-                                    );
-                                })
+                                this.state.commands.length === 0
+                                    ? <Typography style={{padding: "1rem"}}>
+                                        No entries yet. Click the button at the bottom to get started!
+                                    </Typography>
+                                    : this.state.commands.map(command => {
+                                        const commandName = command.name[0].toUpperCase() + command.name.substring(1);
+                                        const successRate = Math.round(command.successRate * 100);
+                                        return (
+                                            <ListItem
+                                                button
+                                                component={Link}
+                                                key={command.id}
+                                                to={`/detail/${command.id}`}>
+                                                <ListItemText
+                                                    primary={commandName}
+                                                    secondary={`${isNaN(successRate) ? 0 : successRate}%`}/>
+                                            </ListItem>
+                                        );
+                                    })
                             }
                         </List>
                 }
