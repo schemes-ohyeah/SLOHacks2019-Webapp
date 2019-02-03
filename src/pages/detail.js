@@ -24,6 +24,7 @@ import Firebase from "../util/Firebase";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import DragonBoard from "../util/DragonBoard";
 import GoogleSpeech from "../util/GoogleSpeech";
+import LogoIcon from "../components/LogoIcon";
 
 const styles = theme => ({
     grow: {
@@ -31,7 +32,7 @@ const styles = theme => ({
     },
     menuButton: {
         marginLeft: -12,
-        marginRight: 20,
+        marginRight: 10,
     },
     fab: {
         position: 'absolute',
@@ -40,14 +41,14 @@ const styles = theme => ({
     },
     successAvatar: {
         margin: 10,
-        backgroundColor: green[500]
+        backgroundColor: green[400]
     },
     failAvatar: {
         margin: 10,
         backgroundColor: red[500]
     },
     title: {
-        marginTop: 10,
+        marginTop: 20,
         textAlign: "center"
     }
 });
@@ -166,7 +167,7 @@ class Detail extends React.Component {
                             <BackButton/>
                         </IconButton>
                         <Typography variant="h6" color="inherit" className={classes.grow}>
-                            <span role="img" aria-label="Dog emoji">🐶</span>{" Command Training"}
+                            <LogoIcon/>{" Command Training"}
                         </Typography>
                     </Toolbar>
                 </AppBar>

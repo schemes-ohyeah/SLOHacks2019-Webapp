@@ -4,7 +4,6 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Fab from '@material-ui/core/Fab';
-import AddIcon from '@material-ui/icons/Add';
 import List from "@material-ui/core/List/List";
 import ListItem from "@material-ui/core/ListItem/ListItem";
 import ListItemText from "@material-ui/core/ListItemText/ListItemText";
@@ -18,6 +17,7 @@ import AudioTranscriber from "../components/AudioTranscriber";
 import Firebase from "../util/Firebase";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 import {withRouter} from "react-router";
+import LogoIcon from "../components/LogoIcon";
 
 const styles = theme => ({
     root: {
@@ -89,7 +89,7 @@ class Home extends React.Component {
                 <AppBar position="static">
                     <Toolbar>
                         <Typography variant="h6" color="inherit" className={classes.grow}>
-                            <span role="img" aria-label="Dog emoji">🐶</span>{" Dog Instrucc"}
+                            <LogoIcon/>{" Dog Instrucc"}
                         </Typography>
                     </Toolbar>
                 </AppBar>
@@ -128,7 +128,7 @@ class Home extends React.Component {
                     className={classes.fab}
                     color="secondary"
                     onClick={this.modalOn}>
-                    <AddIcon/>
+                    <i className="fas fa-paw"/>
                 </Fab>
 
                 {/* Add new command modal */}
