@@ -70,12 +70,10 @@ class Detail extends React.Component {
     }
 
     componentDidMount() {
-        Firebase.getCommand(this.props.match.params.id)
-            .then(data => this.setState({data}));
+        this.getData();
     }
 
     get successRate() {
-
         if (this.state.data === undefined) {
             return 0;
         }
@@ -91,6 +89,11 @@ class Detail extends React.Component {
 
         return this.state.data.name[0].toUpperCase() + this.state.data.name.substring(1);
     }
+
+    getData = () => {
+        Firebase.getCommand(this.props.match.params.id)
+            .then(data => this.setState({data}));
+    };
 
     handleLoopStatusUpdate = () => {
         if (this.state.loopStatus === Detail.LOOP_STATUS.idle) {
@@ -146,7 +149,8 @@ class Detail extends React.Component {
     _processData = () => {
         DragonBoard.stopAccelerometer()
             .then(attemptId => {
-                // get the attempt document and process it
+                Firebase.validateAttempt(this.props.match.params.id, attemptId)
+                    .then(this.getData);
             });
     };
 
